@@ -105,5 +105,8 @@ grid on
 axis([0 X_1*1.2 0 Y_1*1.2 0 Z_1*1.2])
 %% ---------------------- Adding text labels --------------------------- %%
 for k=1:size(Volume_values_electrodes,1)
-    text(round(Volume_values_electrodes.Centroid(k,1)),round(Volume_values_electrodes.Centroid(k,2)),round(Volume_values_electrodes.Centroid(k,3)),num2str(k,2),'Color','black','FontSize',10)
+    text(round(Volume_values_electrodes.Centroid(k,1)),...
+    round(Volume_values_electrodes.Centroid(k,2)),...
+    round(Volume_values_electrodes.Centroid(k,3)),...
+    num2str(k,2),'Color','black','FontSize',10)
 end
