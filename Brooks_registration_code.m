@@ -17,7 +17,7 @@ clear Matrix_3D_1
 clear Matrix_3D_2
 %% ------------------- Levels (z) dimension alignment ------------------ %%
 %% ----------------------------- Set up -------------------------------- %%
-slice_checked=153;
+slice_checked=190;
 Set_1_levels_checked=Matrix_3D_set_1(:,:,slice_checked);
 %% ------------------- First loop ('Positive' shift) ------------------- %%
 values_levels_positive=zeros(1,31);
@@ -142,7 +142,7 @@ Matrix_3D_set_2_registration_rows=zeros(x_2, y_2, z_2);
 if Set_2_rows_shift_value==0
     Matrix_3D_set_2_registration_rows=Matrix_3D_set_2_registration_levels;
 elseif num_pix_rows_positive<num_pix_rows_negative
-    for i=1:x-Set_2_levels_shift_value
+    for i=1:x_2-Set_2_levels_shift_value
         Matrix_3D_set_2_registration_rows(i,:,:)=...
             Matrix_3D_set_2_registration_levels...
             (i+Set_2_rows_shift_value,:,:);
@@ -244,18 +244,18 @@ clear Matrix_3D_set_2_registration_rows i num_pix_columns_negative...
     values_columns_positive
 %% ---------------------- Angular shift alignment ---------------------- %%
 %% ------------------ Finding new centre of rotation ------------------- %%
-slice_checked_2=230;
+slice_checked_2=200;
 figure
 subplot(1,2,1)
 imagesc(Matrix_3D_set_1(:,:,slice_checked_2)), hold on
-plot([100 300],[34 34]),hold off
+plot([100 300],[43 43]),hold off
 subplot(1,2,2)
 imagesc(Matrix_3D_set_2_registration_columns(:,:,slice_checked_2)), hold on
-plot([100 300],[34 34]), hold off
+plot([100 300],[43 43]), hold off
 colormap gray
 %% ------------------- Setting new centre of rotation ------------------ %%
 y_new_centre=206;
-x_new_centre=34;
+x_new_centre=43;
 % ------------------------------ STEP 1 -------------------------------- %
 % The assumption is made that x_new_centre is always < (x_2)/2, beacuse
 % the obtained landmark of the new centre of rotation is one of the
