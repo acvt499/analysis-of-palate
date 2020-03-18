@@ -38,11 +38,6 @@ for Set_2_levels_shift_value=1:30
     values_levels_negative(1,Set_2_levels_shift_value)=sum_negative;
 end
 values_levels_negative_flip=fliplr(values_levels_negative);
-%% ---------------------- Sensitivity analysis ------------------------- %%
-values_levels_final=...
-    horzcat(values_levels_negative_flip,values_levels_positive);
-plot((-30:30),values_levels_final)
-% -------------------------- Save the plot ----------------------------- %
 %% ----------------- If statement to find optimal value ---------------- %%
 [num_pix_levels_positive,optimal_shift_value_positive_raw]=...
     min(values_levels_positive);
@@ -54,11 +49,30 @@ if num_pix_levels_positive<num_pix_levels_negative
     disp(strcat('Optimal shift value in levels:  ',...
         num2str(optimal_shift_value_positive)))
     Set_2_levels_shift_value=optimal_shift_value_positive;
+    Diff_pix_for_plot=num_pix_levels_positive;
 else
     disp(strcat('Optimal shift value in levels:  ',...
         num2str(optimal_shift_value_negative)))
     Set_2_levels_shift_value=optimal_shift_value_negative;
+    Diff_pix_for_plot=num_pix_levels_negative;
 end
+%% ---------------------- Sensitivity analysis ------------------------- %%
+values_levels_final=...
+    horzcat(values_levels_negative_flip,values_levels_positive);
+plot((-30:30),values_levels_final, 'LineWidth',2,'Color',...
+    [0.3010 0.7450 0.9330]), hold on
+grid on
+title('Sensitivity analysis - levels')
+xlabel('Shift value')
+ylabel('Difference in number of pixels')
+plot(Set_2_levels_shift_value, Diff_pix_for_plot,...
+    '.', 'MarkerSize', 16, 'Color', 'red'), hold on
+plot([-30 Set_2_levels_shift_value],...
+    [Diff_pix_for_plot Diff_pix_for_plot],'--'), hold on
+plot([Set_2_levels_shift_value Set_2_levels_shift_value]...
+    ,[Diff_pix_for_plot-5e+3 Diff_pix_for_plot],'--'), hold off
+axis([-30 30 Diff_pix_for_plot-5e+3 4.5e+4])
+% -------------------------- Save the plot ----------------------------- %
 %% -------- Creating new matrix with better alignment in levels -------- %%
 [x_2, y_2, z_2]=size(Matrix_3D_set_2);
 % ------------------ Setting up "empty" 3D matrix ---------------------- %
@@ -84,7 +98,7 @@ clear Matrix_3D_set_2 Set_2_levels_checked num_pix_levels_negative ...
      optimal_shift_value_positive_raw Set_2_levels_shift_value...
      Set_levels_diff i sum_negative sum_positive values_levels_final...
      values_levels_negative values_levels_negative_flip...
-     values_levels_positive loc_1 loc_2
+     values_levels_positive loc_1 loc_2 Diff_pix_for_plot
 %% -------------------- Rows (x) dimension alignment ------------------- %%
 %% ------------------- First loop ('Positive' shift) ------------------- %%
 values_rows_positive=zeros(1,31);
@@ -116,10 +130,6 @@ for Set_2_rows_shift_value=1:30
     values_rows_negative(1,Set_2_rows_shift_value)=sum_negative;
 end
 values_rows_negative_flip=fliplr(values_rows_negative);
-%% ---------------------- Sensitivity analysis ------------------------- %%
-values_rows_final=horzcat(values_rows_negative_flip,values_rows_positive);
-plot((-30:30),values_rows_final)
-% -------------------------- Save the plot ----------------------------- %
 %% ---------------- If statement to find optimal value ----------------- %%
 [num_pix_rows_positive,optimal_shift_value_rows_positive_raw]=...
     min(values_rows_positive);
@@ -131,24 +141,42 @@ if num_pix_rows_positive<num_pix_rows_negative
     disp(strcat('Optimal shift value in rows:  ',...
         num2str(Optimal_shift_value_positive)))
     Set_2_rows_shift_value=Optimal_shift_value_positive;
+    Diff_pix_for_plot=num_pix_rows_positive;
 else
      disp(strcat('Optimal shift value in rows:  ',...
         num2str(Optimal_shift_value_negative)))
     Set_2_rows_shift_value=Optimal_shift_value_negative;
+    Diff_pix_for_plot=num_pix_rows_negative;
 end
+%% ---------------------- Sensitivity analysis ------------------------- %%
+values_rows_final=horzcat(values_rows_negative_flip,values_rows_positive);
+plot((-30:30),values_rows_final, 'LineWidth',2,'Color',...
+    [0.3010 0.7450 0.9330]), hold on
+grid on
+title('Sensitivity analysis - rows')
+xlabel('Shift value')
+ylabel('Difference in number of pixels')
+plot(Set_2_rows_shift_value, Diff_pix_for_plot,...
+    '.', 'MarkerSize', 16, 'Color', 'red'), hold on
+plot([-30 Set_2_rows_shift_value],...
+    [Diff_pix_for_plot Diff_pix_for_plot],'--'), hold on
+plot([Set_2_rows_shift_value Set_2_rows_shift_value]...
+    ,[Diff_pix_for_plot-5e+3 Diff_pix_for_plot],'--'), hold off
+axis([-30 30 Diff_pix_for_plot-5e+3 4.5e+4])
+% -------------------------- Save the plot ----------------------------- %
 %% -------- Creating new matrix with better alignment in rows ---------- %%
 % ------------------ Setting up "empty" 3D matrix ---------------------- %
 Matrix_3D_set_2_registration_rows=zeros(x_2, y_2, z_2);
 if Set_2_rows_shift_value==0
     Matrix_3D_set_2_registration_rows=Matrix_3D_set_2_registration_levels;
 elseif num_pix_rows_positive<num_pix_rows_negative
-    for i=1:x-Set_2_levels_shift_value
+    for i=1:x_2-Set_2_rows_shift_value
         Matrix_3D_set_2_registration_rows(i,:,:)=...
             Matrix_3D_set_2_registration_levels...
             (i+Set_2_rows_shift_value,:,:);
     end
 else
-    for i=1:x_2+Set_2_levels_shift_value
+    for i=1:x_2+Set_2_r_shift_value
         Matrix_3D_set_2_registration_rows(i,:,:)=...
             Matrix_3D_set_2_registration_levels...
             (i-Set_2_rows_shift_value,:,:);
@@ -194,10 +222,6 @@ for Set_2_columns_shift_value=1:30
     values_columns_negative(1,Set_2_columns_shift_value)=sum_negative;
 end
 values_columns_negative_flip=fliplr(values_columns_negative);
-%% ---------------------- Sensitivity analysis ------------------------- %%
-values_columns_final=horzcat...
-    (values_columns_negative_flip,values_columns_positive);
-plot((-30:30),values_columns_final)
 %% ---------------- If statement to find optimal value ----------------- %%
 [num_pix_columns_positive,optimal_value_shift_columns_positive_raw]=...
     min(values_columns_positive);
@@ -209,11 +233,29 @@ if num_pix_columns_positive<num_pix_columns_negative
     disp(strcat('Optimal shift value in columns:  ',...
         num2str(Optimal_shift_value_positive)))
     Set_2_columns_shift_value=Optimal_shift_value_positive;
+    Diff_pix_for_plot=num_pix_columns_positive;
 else
      disp(strcat('Optimal shift value in columns:  ',...
         num2str(Optimal_shift_value_negative)))
     Set_2_columns_shift_value=Optimal_shift_value_negative;
+    Diff_pix_for_plot=num_pix_columns_negative;
 end
+%% ---------------------- Sensitivity analysis ------------------------- %%
+values_columns_final=horzcat...
+    (values_columns_negative_flip,values_columns_positive);
+plot((-30:30),values_columns_final, 'LineWidth',2,'Color',...
+    [0.3010 0.7450 0.9330]), hold on
+grid on
+title('Sensitivity analysis - columns')
+xlabel('Shift value')
+ylabel('Difference in number of pixels')
+plot(Set_2_columns_shift_value, Diff_pix_for_plot,...
+    '.', 'MarkerSize', 16, 'Color', 'red'), hold on
+plot([-30 Set_2_columns_shift_value],...
+    [Diff_pix_for_plot Diff_pix_for_plot],'--'), hold on
+plot([Set_2_columns_shift_value Set_2_columns_shift_value]...
+    ,[Diff_pix_for_plot-5e+3 Diff_pix_for_plot],'--'), hold off
+axis([-30 30 Diff_pix_for_plot-5e+3 4.5e+4])
 %% -------- Creating new matrix with better alignment in columns ------- %%
 % ------------------ Setting up "empty" 3D matrix ---------------------- %
 Matrix_3D_set_2_registration_columns=zeros(x_2, y_2, z_2);
@@ -241,7 +283,7 @@ clear Matrix_3D_set_2_registration_rows i num_pix_columns_negative...
     Set_2_columns_shift Set_2_columns_shift_value Set_2_rows_shift_value...
     Set_diff sum_negative sum_positive values_columns_final ...
     values_columns_negative values_columns_negative_flip ...
-    values_columns_positive
+    values_columns_positive Diff_pix_for_plot
 %% ---------------------- Angular shift alignment ---------------------- %%
 %% ------------------ Finding new centre of rotation ------------------- %%
 slice_checked_2=230;
@@ -304,6 +346,8 @@ end
 % ----------------------------- Testing -------------------------------- %
 imagesc(Set_1_new_centre_step2(:,:,slice_checked_2))
 colormap gray
+%% --------------------------------------------------------------------- %%
+clear Set_1_new_centre_step1 Set_2_new_centre_step1
 %% ----------------------  Fiding optimal angle ------------------------ %%
 %% ------------------- First loop ('Positive' shift) ------------------- %%
 angle_values_positive=zeros(1,11);
@@ -327,9 +371,6 @@ for Set_2_angle_shift_value=1:10
     angle_value_negative(1,Set_2_angle_shift_value)=sum_negative;
 end
 angles_value_negative_flip=fliplr(angle_value_negative);
-%% ---------------------- Sensitivity analysis ------------------------- %%
-angle_value_final=horzcat(angles_value_negative_flip,angle_values_positive);
-plot((-10:10),angle_value_final)
 %% ----------------- If statement to find optimal value ---------------- %%
 [num_pix_angle_shift_positive,optimal_angle_shift_positive_raw]=...
     min(angle_values_positive);
@@ -341,11 +382,28 @@ if num_pix_angle_shift_positive<num_pix_angle_shift_negative
     disp(strcat('Optimal shift value in angle:  ',...
         num2str(Optimal_shift_value_positive), ' degrees'))
         Set_2_angle_shift_value=Optimal_shift_value_positive;
+        Diff_pix_for_plot=num_pix_angle_shift_positive;
 else
     disp(strcat('Optimal shift value in angle: -  ',...
         num2str(Optimal_shift_value_negative),' degrees'))
         Set_2_angle_shift_value=Optimal_shift_value_negative;
+        Diff_pix_for_plot=num_pix_angle_shift_negative;
 end
+%% ---------------------- Sensitivity analysis ------------------------- %%
+angle_value_final=horzcat(angles_value_negative_flip,angle_values_positive);
+plot((-10:10),angle_value_final, 'LineWidth',2,'Color',...
+    [0.3010 0.7450 0.9330]), hold on
+grid on
+title('Sensitivity analysis - angle')
+xlabel('Shift value')
+ylabel('Difference in number of pixels')
+plot(Set_2_angle_shift_value, Diff_pix_for_plot,...
+    '.', 'MarkerSize', 16, 'Color', 'red'), hold on
+plot([-10 Set_2_angle_shift_value],...
+    [Diff_pix_for_plot Diff_pix_for_plot],'--'), hold on
+plot([Set_2_angle_shift_value Set_2_angle_shift_value]...
+    ,[Diff_pix_for_plot-5e+3 Diff_pix_for_plot],'--'), hold off
+axis([-10 10 Diff_pix_for_plot-5e+3 7e+4])
 %% --------------------------------------------------------------------- %%
 clear Set_1_new_centre_step1 Set_2_new_centre_step1 ...
     Set_2_angular_rotation angle_value_final angle_value_negative...
@@ -372,12 +430,27 @@ colormap gray
 Matrix_3D_set_2_registration_angle=zeros(x_2, y_2, z_2);
 Matrix_3D_set_2_registration_angle(:,:,:)=...
     Set_2_angle_alignment(x_added_step_1:end-1,y_added_step_2:end-1,:);
+%% ------------------- Visualisation of difference --------------------- %%
+figure
+subplot(1,2,1)
+output_without_shifting=(Matrix_3D_set_1(:,:,slice_checked_2)>1700)...
+    -(Matrix_3D_set_2_registration_columns(:,:,slice_checked_2)>1700);
+imagesc(output_without_shifting)
+title('Without angular shift')
+xlabel('a)')
+subplot(1,2,2)
+output_with_shifting=(Matrix_3D_set_1(:,:,slice_checked_2)>1700)...
+    -(Matrix_3D_set_2_registration_angle(:,:,slice_checked_2)>1700);
+imagesc(output_with_shifting)
+title('With angular shift')
+xlabel('b)')
+colormap gray
 %% -------------------------- Save the matrix -------------------------- %%
 %% --------------------------------------------------------------------- %%
 clear Matrix_3D_set_2_registration_columns output_of_angular_shifting...
     Set_1_new_centre_step2 Set_2_angle_alignment Set_2_angle_shift_value...
     Set_2_new_centre_step2 x_added_step_1 x_new_centre y_added_step_2...
-    y_new_centre
+    y_new_centre output_with_shifting output_without_shifting
 %% -------------- Second check rows and columns alignment -------------- %%
 %% ------------ Rows (x) dimension alignment - SECOND CHECK ------------ %%
 %% ------------------- First loop ('Positive' shift) ------------------- %%
@@ -410,11 +483,6 @@ for Set_2_rows_shift_value=1:30
     values_rows_negative(1,Set_2_rows_shift_value)=sum_negative;
 end
 values_rows_negative_flip=fliplr(values_rows_negative);
-%% ---------------------- Sensitivity analysis ------------------------- %%
-figure
-values_rows_final=horzcat(values_rows_negative_flip,values_rows_positive);
-plot((-30:30),values_rows_final)
-% -------------------------- Save the plot ----------------------------- %
 %% ---------------- If statement to find optimal value ----------------- %%
 [num_pix_rows_positive,optimal_shift_value_rows_positive_raw]=...
     min(values_rows_positive);
@@ -426,11 +494,30 @@ if num_pix_rows_positive<num_pix_rows_negative
     disp(strcat('Optimal shift value in rows:  ',...
         num2str(Optimal_shift_value_positive)))
     Set_2_rows_shift_value=Optimal_shift_value_positive;
+    Diff_pix_for_plot=num_pix_rows_positive;
 else
      disp(strcat('Optimal shift value in rows:  ',...
         num2str(Optimal_shift_value_negative)))
     Set_2_rows_shift_value=Optimal_shift_value_negative;
+    Diff_pix_for_plot=num_pix_rows_negative;
 end
+%% ---------------------- Sensitivity analysis ------------------------- %%
+figure
+values_rows_final=horzcat(values_rows_negative_flip,values_rows_positive);
+plot((-30:30),values_rows_final,'LineWidth',2,'Color',...
+    [0.3010 0.7450 0.9330]), hold on
+grid on
+title('Sensitivity analysis - rows, SECOND ANALYSIS')
+xlabel('Shift value')
+ylabel('Difference in number of pixels')
+plot(Set_2_rows_shift_value, Diff_pix_for_plot,...
+    '.', 'MarkerSize', 16, 'Color', 'red'), hold on
+plot([-30 Set_2_rows_shift_value],...
+    [Diff_pix_for_plot Diff_pix_for_plot],'--'), hold on
+plot([Set_2_rows_shift_value Set_2_rows_shift_value]...
+    ,[Diff_pix_for_plot-5e+3 Diff_pix_for_plot],'--'), hold off
+axis([-30 30 Diff_pix_for_plot-5e+3 4.5e+4])
+% -------------------------- Save the plot ----------------------------- %
 %% -------- Creating new matrix with better alignment in rows ---------- %%
 % ------------------ Setting up "empty" 3D matrix ---------------------- %
 Matrix_3D_set_2_registration_rows_second_check=zeros(x_2, y_2, z_2);
@@ -457,7 +544,7 @@ clear i Matrix_3D_set_2_registration_angle num_pix_rows_negative...
     optimal_shift_value_rows_positive_raw Set_2_levels_checked...
     Set_2_rows_shift Set_2_rows_shift_value Set_levels_diff sum_negative...
     sum_positive values_rows_final values_rows_negative ...
-    values_rows_negative_flip values_rows_positive
+    values_rows_negative_flip values_rows_positive Diff_pix_for_plot
 %% ------------ Columns (y) dimension alignment - SECOND CHECK --------- %%
 %% -------------------- First loop ('Positive' shift) ------------------ %%
 values_columns_positive=zeros(1,31);
@@ -489,11 +576,6 @@ for Set_2_columns_shift_value=1:30
     values_columns_negative(1,Set_2_columns_shift_value)=sum_negative;
 end
 values_columns_negative_flip=fliplr(values_columns_negative);
-%% ---------------------- Sensitivity analysis ------------------------- %%
-figure
-values_columns_final=horzcat...
-    (values_columns_negative_flip,values_columns_positive);
-plot((-30:30),values_columns_final)
 %% ---------------- If statement to find optimal value ----------------- %%
 [num_pix_columns_positive,optimal_value_shift_columns_positive_raw]=...
     min(values_columns_positive);
@@ -505,11 +587,30 @@ if num_pix_columns_positive<num_pix_columns_negative
     disp(strcat('Optimal shift value in columns:  ',...
         num2str(Optimal_shift_value_positive)))
     Set_2_columns_shift_value=Optimal_shift_value_positive;
+    Diff_pix_for_plot=num_pix_columns_positive;
 else
      disp(strcat('Optimal shift value in columns:  ',...
         num2str(Optimal_shift_value_negative)))
     Set_2_columns_shift_value=Optimal_shift_value_negative;
+    Diff_pix_for_plot=num_pix_columns_negative;
 end
+%% ---------------------- Sensitivity analysis ------------------------- %%
+figure
+values_columns_final=horzcat...
+    (values_columns_negative_flip,values_columns_positive);
+plot((-30:30),values_columns_final, 'LineWidth',2,'Color',...
+    [0.3010 0.7450 0.9330]), hold on
+grid on
+title('Sensitivity analysis - columns, SECOND ANALYSIS')
+xlabel('Shift value')
+ylabel('Difference in number of pixels')
+plot(Set_2_columns_shift_value, Diff_pix_for_plot,...
+    '.', 'MarkerSize', 16, 'Color', 'red'), hold on
+plot([-30 Set_2_columns_shift_value],...
+    [Diff_pix_for_plot Diff_pix_for_plot],'--'), hold on
+plot([Set_2_columns_shift_value Set_2_columns_shift_value]...
+    ,[Diff_pix_for_plot-5e+3 Diff_pix_for_plot],'--'), hold off
+axis([-30 30 Diff_pix_for_plot-5e+3 4.5e+4])
 %% -------- Creating new matrix with better alignment in columns ------- %%
 % ------------------ Setting up "empty" 3D matrix ---------------------- %
 Matrix_3D_set_2_registration_columns_second_check=zeros(x_2, y_2, z_2);
