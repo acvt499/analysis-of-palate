@@ -18,7 +18,8 @@ clear loc_1 loc_2 Matrix_3D_1 Matrix_3D_set_2_registration_completed
 Device_matrix_with_noise= Matrix_3D_set_1-Matrix_3D_set_2;
 %% ----------------- Labeling Device matrix stage 1 -------------------- %%
 Set_2_labeled_with_small_noise=bwlabeln...
-    (Device_matrix_with_noise(:,:,:)>3150);
+    (Device_matrix_with_noise(:,:,:)>3200);
+figure
 imagesc(max(Set_2_labeled_with_small_noise(:,:,:),[],3))
 jet2=jet;
 jet2(1,:)=0;
@@ -30,30 +31,79 @@ Small_noise_treshold =600;
 Set_2_labeled_objects_removed=ismember(Set_2_labeled_with_small_noise,...
     find([Volume_values_with_small_noise.Volume]>Small_noise_treshold));
 Set_2_labeled_without_small_noise=bwlabeln(Set_2_labeled_objects_removed);
+figure
 imagesc(max(Set_2_labeled_without_small_noise(:,:,:),[],3))
 jet2=jet;
 jet2(1,:)=0;
 colormap(jet2)
 Volume_values_without_small_noise=regionprops3...
     (Set_2_labeled_without_small_noise,'Volume');
+%% --------------------- Opening the electrodes ------------------------ %%
+Expe=Set_2_labeled_without_small_noise;
+se = strel('line',8,180);
+Set_2_opening_1=imopen((Expe(370:420,85:140,:)),se);
+for i=370:420
+    for j=85:140
+Expe(i,j,:)=Set_2_opening_1(i-370+1,j-85+1,:);
+    end
+end
+imagesc(max(Expe(:,:,:),[],3))
+se=strel('rectangle',[2 8]);
+Set_2_opening_1=imopen((Expe),se);
+%%
+Expe_2=Expe;
+se = strel('line',12,30);
+Set_2_opening_2=imopen((Expe_2(276:295,85:110,:)),se);
+for i=276:295
+    for j=85:110
+Expe_2(i,j,:)=Set_2_opening_2(i-276+1,j-85+1,:);
+    end
+end
+%%
+se=strel('rectangle',[2 8]);
+Expe_3=imopen(Expe_2, se);
+imagesc(max(Expe_3(:,:,:),[],3))
+% se=strel('line',10,30);
+% Set_2_opening=imopen((Set_2_opening),se);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% figure
+% imagesc(max(Set_2_opening(:,:,:),[],3))
+% colormap(jet2)
+% Set_2_labeled_after_opening=bwlabeln(Set_2_opening);
+% Volume_labeled_open=regionprops3(Set_2_labeled_after_opening,'Volume');
+%% --------------------------------------------------------------------- %%
+clear Device_matrix_with_noise Matrix_3D_set_1 Matrix_3D_set_2...
+    Set_2_labeled_with_small_noise Set_2_labeled_objects_removed...
+    Volume_values_with_small_noise
 %% ----------------------- Separating electrodes ----------------------- %%
-Electrodes_treshold= 4600;
-Set_2_labeled_separating_electrodes=ismember...
-    (Set_2_labeled_without_small_noise, find...
-    ([Volume_values_without_small_noise.Volume]<Electrodes_treshold));
-Set_2_labeled_electrodes=bwlabeln(Set_2_labeled_separating_electrodes);
-imagesc(max(Set_2_labeled_electrodes(:,:,:),[],3))
+Electrodes_treshold_1 = 3000;
+Electrodes_treshold_2 = 700;
+Set_2_labeled_separating_electrodes_1_tresh=ismember...
+    (Set_2_labeled_after_opening, find...
+    ([Volume_labeled_open.Volume]<Electrodes_treshold_1));
+Set_2_labeled_electrodes_1=bwlabeln(...
+    Set_2_labeled_separating_electrodes_1_tresh);
+Volume_labeled_electrodes_1=regionprops3(...
+    Set_2_labeled_electrodes_1,'Volume');
+Set_2_labeled_separating_electrodes_2_tresh=ismember...
+    (Set_2_labeled_electrodes_1, find...
+    ([Volume_labeled_electrodes_1.Volume]>Electrodes_treshold_2));
+Set_2_labeled_electrodes_2=bwlabeln(...
+    Set_2_labeled_separating_electrodes_2_tresh);
+figure
+imagesc(max(Set_2_labeled_electrodes_2(:,:,:),[],3))
 jet2=jet;
 jet2(1,:)=0;
 colormap(jet2)
 Volume_values_electrodes=regionprops3...
-    (Set_2_labeled_electrodes,'Volume','Centroid');
+    (Set_2_labeled_electrodes_2,'Volume','Centroid');
 %% ------------------------ Separating wires --------------------------- %%
 Wires_treshold=4500;
 Set_2_labeled_separating_wires=ismember...
     (Set_2_labeled_without_small_noise, find...
     ([Volume_values_without_small_noise.Volume]>Wires_treshold));
 Set_2_labeled_wires=bwlabeln(Set_2_labeled_separating_wires);
+figure
 imagesc(max(Set_2_labeled_wires(:,:,:),[],3))
 jet2=jet;
 jet2(1,:)=0;
@@ -61,7 +111,7 @@ colormap(jet2)
 Volume_values_wires=regionprops3...
     (Set_2_labeled_wires,'Volume','Centroid');
 %% ------------------------ Set up - electrodes ------------------------ %%
-Electrodes_matrix=Set_2_labeled_electrodes;
+Electrodes_matrix=Set_2_labeled_electrodes_1;
 [X_1,Y_1,Z_1]=size(Electrodes_matrix);
 [X_2D,Y_2D]=meshgrid((1:X_1),(1:Y_1));
 Z_2D=ones(size(X_2D));
@@ -102,7 +152,7 @@ lighting gouraud
 material shiny
 view(170,50)
 grid on
-axis([0 X_1*1.2 0 Y_1*1.2 0 Z_1*1.2])
+axis([-X_1/4 X_1*1.2 -Y_1/4 Y_1*1.2 -Z_1/4 Z_1*1.2])
 %% ---------------------- Adding text labels --------------------------- %%
 for k=1:size(Volume_values_electrodes,1)
     text(round(Volume_values_electrodes.Centroid(k,1)),...
