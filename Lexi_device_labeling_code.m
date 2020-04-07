@@ -38,6 +38,61 @@ jet2(1,:)=0;
 colormap(jet2)
 Volume_values_without_small_noise=regionprops3...
     (Set_2_labeled_without_small_noise,'Volume');
+%% ------ Finding the treshold for segmenting electrodes and wires ----- %%
+figure(1)
+plot(Volume_values_without_small_noise.Volume,'b-o'); 
+grid on;
+axis tight
+figure(2)
+imagesc(max(Set_2_labeled_without_small_noise(:,:,:),[],3))
+%% ------------- Initially segmenting wires and electrodes ------------- %%
+close all
+wires_treshold = 5000;
+wires = ismember(Set_2_labeled_without_small_noise,...
+    find([Volume_values_without_small_noise.Volume]>wires_treshold));
+electrodes = ismember(Set_2_labeled_without_small_noise,...
+    find([Volume_values_without_small_noise.Volume]<wires_treshold));
+figure(3)
+imagesc(max(wires(:,:,:),[],3))
+figure(4)
+imagesc(max(electrodes(:,:,:),[],3))
+%% --------------------------------------------------------------------- %%
+clear Matrix_3D_set_1 Matrix_3D_set_2 wires_treshold ...
+    Device_matrix_with_noise Set_2_labeled_objects_removed...
+    Set_2_labeled_with_small_noise Set_2_labeled_without_small_noise...
+    Small_noise_treshold Volume_values_with_small_noise...
+    Volume_values_without_small_noise
+%% -------------- Removing noise objects from electrodes --------------- %%
+electrodes_labeled = bwlabeln(electrodes);
+electrodes_labeled_props = regionprops3(electrodes_labeled,'Volume');
+imagesc(max(electrodes_labeled(:,:,:),[],3))
+colormap(jet2)
+% ---------- Removing two objects that are not the elxtrodes ------------ %
+% 3389 and 1009 are the volume of two objects identified as noise in this
+% class
+electrodes_removed_1 = ismember(electrodes_labeled,...
+    find(electrodes_labeled_props.Volume~=3389));
+electrodes_removed_1=bwlabeln(electrodes_removed_1);
+electrodes_props_removed_1=regionprops3(electrodes_removed_1,'Volume');
+electrodes_removed_2 = ismember(electrodes_removed_1,...
+    find(electrodes_props_removed_1.Volume~=1009));
+electrodes_removed_2=bwlabeln(electrodes_removed_2);
+imagesc(max(electrodes_removed_2(:,:,:),[],3))
+colormap(jet2)
+%% ------------------- Opening the electrodes -------------------------- %%
+strel=strel('rectangle',[3,7]);
+electrodes_opened=imopen(electrodes_removed_2,strel);
+electrodes_opened_labeled=bwlabeln(electrodes_opened);
+imagesc(max(electrodes_opened_labeled(:,:,:),[],3))
+colormap(jet2)
+electrodes_open_labeled_props=regionprops3(electrodes_opened_labeled,...
+    'Volume');
+% electrodes_open_labeled contains 56/62 electrodes
+%% --------------------------------------------------------------------- %%
+clear strel electrodes_labeled electrodes_labeled_props...
+    electrodes_opened electrodes_props_removed_1 electrodes_removed_1...
+    electrodes_removed_2
+
 %% --------------------- Opening the electrodes ------------------------ %%
 Expe=Set_2_labeled_without_small_noise;
 se = strel('line',8,180);
